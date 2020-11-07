@@ -1,216 +1,167 @@
-import pygame, sys
-import time
-import random
+import pygame
+
+BLACK = (0, 0, 0)
+
+WHITE = (255, 255, 255)
+
+RED = (255, 0, 0)
+
+GREEN = (0, 255, 0)
+
+BLUE = (0, 0, 255)
 
 pygame.init()
 
-white = (255, 255, 255)
+# Initializing the display window
 
-black = (100, 0, 0)
+size = (800, 600)
 
-red = (255, 0, 0)
+screen = pygame.display.set_mode(size)
 
-window_width = 800
+pygame.display.set_caption("pong")
 
-window_height = 600
+# Starting coordinates of the paddle
 
-gameDisplay = pygame.display.set_mode((window_width, window_height))
+rect_x = 400
 
-pygame.display.set_caption('slither')
+rect_y = 580
+
+# initial speed of the paddle
+
+rect_change_x = 0
+
+rect_change_y = 0
+
+# initial position of the ball
+
+ball_x = 50
+
+ball_y = 50
+
+# speed of the ball
+
+ball_change_x = 5
+
+ball_change_y = 5
+
+score = 0
+
+
+# draws the paddle. Also restricts its movement between the edges
+
+# of the window.
+
+def drawrect(screen, x, y):
+    if x <= 0:
+        x = 0
+
+    if x >= 699:
+        x = 699
+
+    pygame.draw.rect(screen, RED, [x, y, 100, 20])
+
+
+# game's main loop
+
+done = False
 
 clock = pygame.time.Clock()
 
-FPS = 5
+while not done:
 
-blockSize = 20
+    for event in pygame.event.get():
 
-noPixel = 0
+        if event.type == pygame.QUIT:
 
-'''
+            done = True
 
-sizeGrd = window_width // blockSize
+        elif event.type == pygame.KEYDOWN:
 
+            if event.key == pygame.K_LEFT:
 
+                rect_change_x = -6
 
-row = 0
+            elif event.key == pygame.K_RIGHT:
 
-col = 0
+                rect_change_x = 6
 
-for nextline in range(sizeGrd):
+            # elif event.key == pygame.K_UP:
 
-'''
+            # rect_change_y = -6
 
+            # elif event.key == pygame.K_DOWN:
 
-def myquit():
-    ''' Self explanatory '''
+            # rect_change_y = 6'''
 
-    pygame.quit()
+        elif event.type == pygame.KEYUP:
 
-    sys.exit(0)
+            if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
 
+                rect_change_x = 0
 
-font = pygame.font.SysFont(None, 25, bold=True)
+            elif event.key == pygame.K_UP or event.key == pygame.K_DOWN:
 
+                rect_change_y = 0
 
-def drawGrid():
-    sizeGrd = window_width // blockSize
+    screen.fill(BLACK)
 
+    rect_x += rect_change_x
 
-def snake(blockSize, snakelist):
-    # x = 250 - (segment_width + segment_margin) * i
+    rect_y += rect_change_y
 
-    for size in snakelist:
-        pygame.draw.rect(gameDisplay, black, [size[0] + 5, size[1], blockSize, blockSize], 2)
+    ball_x += ball_change_x
 
+    ball_y += ball_change_y
 
-def message_to_screen(msg, color):
-    screen_text = font.render(msg, True, color)
+    # this handles the movement of the ball.
 
-    gameDisplay.blit(screen_text, [window_width / 2, window_height / 2])
+    if ball_x < 0:
 
+        ball_x = 0
 
-def gameLoop():
-    gameExit = False
+        ball_change_x = ball_change_x * -1
 
-    gameOver = False
+    elif ball_x > 785:
 
-    lead_x = window_width / 2
+        ball_x = 785
 
-    lead_y = window_height / 2
+        ball_change_x = ball_change_x * -1
 
-    change_pixels_of_x = 0
+    elif ball_y < 0:
 
-    change_pixels_of_y = 0
+        ball_y = 0
 
-    snakelist = []
+        ball_change_y = ball_change_y * -1
 
-    snakeLength = 1
+    elif ball_x > rect_x and ball_x < rect_x + 100 and ball_y == 565:
 
-    randomAppleX = round(random.randrange(0, window_width - blockSize) / 10.0) * 10.0
+        ball_change_y = ball_change_y * -1
 
-    randomAppleY = round(random.randrange(0, window_height - blockSize) / 10.0) * 10.0
+        score = score + 1
 
-    while not gameExit:
+    elif ball_y > 600:
 
-        while gameOver == True:
+        ball_change_y = ball_change_y * -1
 
-            gameDisplay.fill(white)
+        score = 0
 
-            message_to_screen("Game over, press c to play again or Q to quit", red)
+    pygame.draw.rect(screen, WHITE, [ball_x, ball_y, 15, 15])
 
-            pygame.display.update()
+    # drawball(screen,ball_x,ball_y)
 
-            for event in pygame.event.get():
+    drawrect(screen, rect_x, rect_y)
 
-                if event.type == pygame.QUIT:
-                    gameOver = False
+    # score board
 
-                    gameExit = True
+    font = pygame.font.SysFont('Calibri', 15, False, False)
 
-                if event.type == pygame.KEYDOWN:
+    text = font.render("Score = " + str(score), True, WHITE)
 
-                    if event.key == pygame.K_q:
-                        gameExit = True
+    screen.blit(text, [600, 100])
 
-                        gameOver = False
+    pygame.display.flip()
 
-                    if event.key == pygame.K_c:
-                        gameLoop()
+    clock.tick(60)
 
-        for event in pygame.event.get():
-
-            if event.type == pygame.QUIT:
-                gameExit = True
-
-            if event.type == pygame.KEYDOWN:
-
-                if event.key == pygame.K_ESCAPE:
-                    myquit()
-
-                leftArrow = event.key == pygame.K_LEFT
-
-                rightArrow = event.key == pygame.K_RIGHT
-
-                upArrow = event.key == pygame.K_UP
-
-                downArrow = event.key == pygame.K_DOWN
-
-                if leftArrow:
-
-                    change_pixels_of_x = -blockSize
-
-                    change_pixels_of_y = noPixel
-
-                elif rightArrow:
-
-                    change_pixels_of_x = blockSize
-
-                    change_pixels_of_y = noPixel
-
-                elif upArrow:
-
-                    change_pixels_of_y = -blockSize
-
-                    change_pixels_of_x = noPixel
-
-                elif downArrow:
-
-                    change_pixels_of_y = blockSize
-
-                    change_pixels_of_x = noPixel
-
-            if lead_x >= window_width or lead_x < 0 or lead_y >= window_height or lead_y < 0:
-                gameOver = True
-
-        lead_x += change_pixels_of_x
-
-        lead_y += change_pixels_of_y
-
-        gameDisplay.fill(white)
-
-        AppleThickness = 20
-
-        print([int(randomAppleX), int(randomAppleY), AppleThickness, AppleThickness])
-
-        pygame.draw.rect(gameDisplay, red, [randomAppleX, randomAppleY, AppleThickness, AppleThickness])
-
-        allspriteslist = []
-
-        allspriteslist.append(lead_x)
-
-        allspriteslist.append(lead_y)
-
-        snakelist.append(allspriteslist)
-
-        if len(snakelist) > snakeLength:
-            del snakelist[0]
-
-        for eachSegment in snakelist[:-1]:
-
-            if eachSegment == allspriteslist:
-                gameOver = True
-
-        snake(blockSize, snakelist)
-
-        pygame.display.update()
-
-        if lead_x >= randomAppleX and lead_x <= randomAppleX + AppleThickness:
-
-            if lead_y >= randomAppleY and lead_y <= randomAppleY + AppleThickness:
-                randomAppleX = round(random.randrange(0, window_width - blockSize) / 10.0) * 10.0
-
-                randomAppleY = round(random.randrange(0, window_height - blockSize) / 10.0) * 10.0
-
-                snakeLength += 1
-
-        clock.tick(FPS)
-
-    pygame.quit()
-
-    quit()
-
-
-gameLoop()
-
-
+pygame.quit()
 
